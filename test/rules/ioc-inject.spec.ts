@@ -144,7 +144,7 @@ ruleTester.run('ioc-inject', rule, {
                  );
                }
              }`,
-      errors: [{ messageId: 'ioc-inject' }],
+      errors: [{ messageId: 'incorrectInjectionToken' }],
     },
   ],
 });

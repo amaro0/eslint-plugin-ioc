@@ -3,39 +3,19 @@ import { AST_NODE_TYPES, TSESLint, TSESTree } from '@typescript-eslint/experimen
 const INJECT_DECORATOR_REGEXP = /(i|I)nject/;
 const INJECTION_TOKEN_REGEXP = /^[A-Za-z]*Token$/;
 
-export const rule: TSESLint.RuleModule<'ioc-inject', []> = {
+type MessageIds = 'injectionTokenIncorrectName' | 'incorrectInjectionToken';
+
+export const rule: TSESLint.RuleModule<MessageIds, []> = {
   meta: {
     schema: [],
     type: 'problem',
     messages: {
-      'ioc-inject': 'a message',
+      incorrectInjectionToken: 'a message',
+      injectionTokenIncorrectName: '123',
     },
   },
-  create(context: Readonly<TSESLint.RuleContext<'ioc-inject', []>>): TSESLint.RuleListener {
+  create(context: Readonly<TSESLint.RuleContext<MessageIds, []>>): TSESLint.RuleListener {
     return {
-      // ClassDeclaration(classDeclaration: TSESTree.ClassDeclaration): void {
-      //   const { decorators, body } = classDeclaration;
-      //   const constructor = <TSESTree.MethodDefinition>body.body.find(
-      //     method => method.type === AST_NODE_TYPES.MethodDefinition && method.kind === 'constructor',
-      //   );
-      //   const constructorParams = constructor.value.params;
-      //   constructorParams.forEach(constructorParam => {
-      //     const { decorators: paramDecorators } = constructorParam;
-      //
-      //     if (!paramDecorators || !paramDecorators.length) return;
-      //
-      //     let injetionTokenName;
-      //     paramDecorators.forEach(decorator => {
-      //       const { calee, arguments } = decorator.expression;
-      //
-      //       if (INJECT_DECORATOR_REGEXP.test(calee.name)) {
-      //         injetionTokenName = calee;
-      //       }
-      //     });
-      //   });
-      //
-      //   // if(classDeclaration.decorators.)
-      // },
       TSParameterProperty(parameterProperty: TSESTree.TSParameterProperty): void {
         const { decorators, parameter } = parameterProperty;
 
@@ -60,7 +40,7 @@ export const rule: TSESLint.RuleModule<'ioc-inject', []> = {
         if (!injectionTokenName || !injectionToken) return;
         if (!INJECTION_TOKEN_REGEXP.test(injectionTokenName)) {
           context.report({
-            messageId: 'ioc-inject',
+            messageId: 'injectionTokenIncorrectName',
             node: injectionToken,
           });
         }
@@ -74,7 +54,7 @@ export const rule: TSESLint.RuleModule<'ioc-inject', []> = {
 
         if (`${injectionTypeName}Token` !== injectionTokenName && injectionTypeName !== injectionTokenName) {
           context.report({
-            messageId: 'ioc-inject',
+            messageId: 'incorrectInjectionToken',
             node: injectionToken,
           });
         }
