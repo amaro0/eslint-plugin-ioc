@@ -11,7 +11,7 @@ const ruleTester = new ESLintUtils.RuleTester({
   },
 });
 
-ruleTester.run('ioc-inject', rule, {
+ruleTester.run('injection-token', rule, {
   valid: [
     {
       code: `import { inject } from 'inversify';
@@ -145,6 +145,28 @@ ruleTester.run('ioc-inject', rule, {
                }
              }`,
       errors: [{ messageId: 'incorrectInjectionToken' }],
+    },
+    {
+      code: `@provide(IGetNonStartedOrganizationFeeChargesToken)
+             export class GetOrganizationQueryHandler
+               implements IGetOrganization
+             {
+               constructor(
+                 @inject(IOrganizationsDatabaseToke)
+                 private database: IOrganizationsDatabase,
+               ) {}
+             
+               run(context?: Context): Promise<Organization> {
+                 return this.database.findAllByContext(
+                   {
+                     organizationId: '123',
+                   },
+                   context,
+                 );
+               }
+             }`,
+      errors: [{ messageId: 'injectionTokenIncorrectName' }],
+      options: [{ injectionTokenNameRegex: /^[A-Za-z]*Token$/ }],
     },
   ],
 });

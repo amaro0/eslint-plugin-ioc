@@ -24,4 +24,5 @@
     "migrations/**/*",
     "seeds/**/*"
   ],
+  "exclude": ["node_modules/**/*"]
 }

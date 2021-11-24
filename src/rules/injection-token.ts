@@ -3,13 +3,12 @@ import { AST_NODE_TYPES, TSESLint, TSESTree } from '@typescript-eslint/experimen
 import { isSubString } from '../common/string';
 
 const INJECT_DECORATOR_REGEXP = /(i|I)nject/;
-const INJECTION_TOKEN_REGEXP = /^[A-Za-z]*Token$/;
 
 type MessageIds = 'injectionTokenIncorrectName' | 'incorrectInjectionToken';
 type Options = [
   {
-    // allowClassInjection?: boolean;
     injectionTokenNameRegex?: RegExp;
+    // allowClassInjection?: boolean;
   },
 ];
 
@@ -25,7 +24,7 @@ export const rule: TSESLint.RuleModule<MessageIds, Options> = {
         type: 'object',
         properties: {
           injectionTokenNameRegex: {
-            type: 'string',
+            type: 'object',
           },
         },
         additionalProperties: false,
@@ -35,6 +34,8 @@ export const rule: TSESLint.RuleModule<MessageIds, Options> = {
   create(context: Readonly<TSESLint.RuleContext<MessageIds, Options>>): TSESLint.RuleListener {
     return {
       TSParameterProperty(parameterProperty: TSESTree.TSParameterProperty): void {
+        const options = context.options[0] ?? {};
+        const { injectionTokenNameRegex } = options;
         const { decorators, parameter } = parameterProperty;
 
         if (!decorators || !decorators.length) return;
@@ -56,13 +57,6 @@ export const rule: TSESLint.RuleModule<MessageIds, Options> = {
         });
 
         if (!injectionTokenName || !injectionToken) return;
-        // if (!INJECTION_TOKEN_REGEXP.test(injectionTokenName)) {
-        //   context.report({
-        //     messageId: 'injectionTokenIncorrectName',
-        //     node: injectionToken,
-        //   });
-        // }
-
         if (!parameter.typeAnnotation) return;
         if (parameter.typeAnnotation.typeAnnotation.type !== AST_NODE_TYPES.TSTypeReference) return;
         const typeRef = <TSESTree.TSTypeReference>parameter.typeAnnotation.typeAnnotation;
@@ -73,6 +67,12 @@ export const rule: TSESLint.RuleModule<MessageIds, Options> = {
         if (!isSubString(injectionTokenName, injectionTypeName)) {
           context.report({
             messageId: 'incorrectInjectionToken',
+            node: injectionToken,
+          });
+        }
+        if (injectionTokenNameRegex && !injectionTokenNameRegex.test(injectionTokenName)) {
+          context.report({
+            messageId: 'injectionTokenIncorrectName',
             node: injectionToken,
           });
         }
