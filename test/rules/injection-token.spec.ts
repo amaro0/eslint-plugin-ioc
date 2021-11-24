@@ -1,6 +1,6 @@
 import { ESLintUtils } from '@typescript-eslint/experimental-utils';
 
-import { rule } from '../../src/ioc-inject';
+import { rule } from '../../src/rules/injection-token';
 import { getFixturesRootDir } from '../utils';
 
 const ruleTester = new ESLintUtils.RuleTester({

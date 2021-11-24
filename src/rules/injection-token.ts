@@ -1,20 +1,38 @@
 import { AST_NODE_TYPES, TSESLint, TSESTree } from '@typescript-eslint/experimental-utils';
 
+import { isSubString } from '../common/string';
+
 const INJECT_DECORATOR_REGEXP = /(i|I)nject/;
 const INJECTION_TOKEN_REGEXP = /^[A-Za-z]*Token$/;
 
 type MessageIds = 'injectionTokenIncorrectName' | 'incorrectInjectionToken';
+type Options = [
+  {
+    // allowClassInjection?: boolean;
+    injectionTokenNameRegex?: RegExp;
+  },
+];
 
-export const rule: TSESLint.RuleModule<MessageIds, []> = {
+export const rule: TSESLint.RuleModule<MessageIds, Options> = {
   meta: {
-    schema: [],
     type: 'problem',
     messages: {
       incorrectInjectionToken: 'a message',
       injectionTokenIncorrectName: '123',
     },
+    schema: [
+      {
+        type: 'object',
+        properties: {
+          injectionTokenNameRegex: {
+            type: 'string',
+          },
+        },
+        additionalProperties: false,
+      },
+    ],
   },
-  create(context: Readonly<TSESLint.RuleContext<MessageIds, []>>): TSESLint.RuleListener {
+  create(context: Readonly<TSESLint.RuleContext<MessageIds, Options>>): TSESLint.RuleListener {
     return {
       TSParameterProperty(parameterProperty: TSESTree.TSParameterProperty): void {
         const { decorators, parameter } = parameterProperty;
@@ -38,12 +56,12 @@ export const rule: TSESLint.RuleModule<MessageIds, []> = {
         });
 
         if (!injectionTokenName || !injectionToken) return;
-        if (!INJECTION_TOKEN_REGEXP.test(injectionTokenName)) {
-          context.report({
-            messageId: 'injectionTokenIncorrectName',
-            node: injectionToken,
-          });
-        }
+        // if (!INJECTION_TOKEN_REGEXP.test(injectionTokenName)) {
+        //   context.report({
+        //     messageId: 'injectionTokenIncorrectName',
+        //     node: injectionToken,
+        //   });
+        // }
 
         if (!parameter.typeAnnotation) return;
         if (parameter.typeAnnotation.typeAnnotation.type !== AST_NODE_TYPES.TSTypeReference) return;
@@ -52,7 +70,7 @@ export const rule: TSESLint.RuleModule<MessageIds, []> = {
         if (typeRef.typeName.type !== AST_NODE_TYPES.Identifier) return;
         const injectionTypeName = typeRef.typeName.name;
 
-        if (`${injectionTypeName}Token` !== injectionTokenName && injectionTypeName !== injectionTokenName) {
+        if (!isSubString(injectionTokenName, injectionTypeName)) {
           context.report({
             messageId: 'incorrectInjectionToken',
             node: injectionToken,
