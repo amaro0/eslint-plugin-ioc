@@ -14,19 +14,8 @@ const ruleTester = new ESLintUtils.RuleTester({
 ruleTester.run('injection-token', rule, {
   valid: [
     {
-      code: `import { inject } from 'inversify';
-             import { provide } from 'inversify-binding-decorators';
-             import { Organization } from './models/Organization';
-             import {
-               IOrganizationsDatabase,
-               IOrganizationsDatabaseToken,
-             } from './ports/IOrganizationsDatabase';
-             import {
-               IGetOrganization,
-               IGetOrganizationToken,
-             } from './ports/IGetOrganization';
-             import { Context } from '../../../common/types';
-             
+      code: `interface IOrganizationsDatabase {}
+              
              @provide(IGetNonStartedOrganizationFeeChargesToken)
              export class GetOrganizationQueryHandler
                implements IGetOrganization
@@ -46,26 +35,15 @@ ruleTester.run('injection-token', rule, {
                }
              }`,
     }, {
-      code: `import { inject } from 'inversify';
-             import { provide } from 'inversify-binding-decorators';
-             import { Organization } from './models/Organization';
-             import {
-               IOrganizationsDatabase,
-               IOrganizationsDatabaseToken,
-             } from './ports/IOrganizationsDatabase';
-             import {
-               IGetOrganization,
-               IGetOrganizationToken,
-             } from './ports/IGetOrganization';
-             import { Context } from '../../../common/types';
-             
+      code: `class TestClass {}
+
              @provide(IGetNonStartedOrganizationFeeChargesToken)
              export class GetOrganizationQueryHandler
                implements IGetOrganization
              {
                constructor(
                  @inject()
-                 private database: OrganizationsRepository,
+                 private database: TestClass,
                ) {}
              
                run(context?: Context): Promise<Organization> {
@@ -167,6 +145,30 @@ ruleTester.run('injection-token', rule, {
              }`,
       errors: [{ messageId: 'injectionTokenIncorrectName' }],
       options: [{ injectionTokenNameRegex: /^[A-Za-z]*Token$/ }],
+    },
+    {
+      code: `class TestClass {}
+              
+             @provide(IGetOrganizationToken)
+             export class GetOrganizationQueryHandler
+               implements IGetOrganization
+             {
+               constructor(
+                 @inject(TestClass)
+                 private database: TestClass,
+               ) {}
+             
+               run(context?: Context): Promise<Organization> {
+                 return this.database.findAllByContext(
+                   {
+                     organizationId: '123',
+                   },
+                   context,
+                 );
+               }
+             }`,
+      errors: [{ messageId: 'classInjection' }],
+      options: [{ allowClassInjection: false }],
     },
   ],
 });

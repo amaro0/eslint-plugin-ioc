@@ -1,14 +1,14 @@
-import { AST_NODE_TYPES, TSESLint, TSESTree } from '@typescript-eslint/experimental-utils';
+import { AST_NODE_TYPES, ESLintUtils, TSESLint, TSESTree } from '@typescript-eslint/experimental-utils';
 
 import { isSubString } from '../common/string';
 
 const INJECT_DECORATOR_REGEXP = /(i|I)nject/;
 
-type MessageIds = 'injectionTokenIncorrectName' | 'incorrectInjectionToken';
+type MessageIds = 'injectionTokenIncorrectName' | 'incorrectInjectionToken' | 'classInjection';
 type Options = [
   {
     injectionTokenNameRegex?: RegExp;
-    // allowClassInjection?: boolean;
+    allowClassInjection?: boolean;
   },
 ];
 
@@ -18,6 +18,7 @@ export const rule: TSESLint.RuleModule<MessageIds, Options> = {
     messages: {
       incorrectInjectionToken: 'a message',
       injectionTokenIncorrectName: '123',
+      classInjection: 'Forbidden class injection',
     },
     schema: [
       {
@@ -25,6 +26,10 @@ export const rule: TSESLint.RuleModule<MessageIds, Options> = {
         properties: {
           injectionTokenNameRegex: {
             type: 'object',
+          },
+          allowClassInjection: {
+            type: 'boolean',
+            default: true,
           },
         },
         additionalProperties: false,
@@ -35,7 +40,7 @@ export const rule: TSESLint.RuleModule<MessageIds, Options> = {
     return {
       TSParameterProperty(parameterProperty: TSESTree.TSParameterProperty): void {
         const options = context.options[0] ?? {};
-        const { injectionTokenNameRegex } = options;
+        const { injectionTokenNameRegex, allowClassInjection } = options;
         const { decorators, parameter } = parameterProperty;
 
         if (!decorators || !decorators.length) return;
@@ -73,6 +78,20 @@ export const rule: TSESLint.RuleModule<MessageIds, Options> = {
         if (injectionTokenNameRegex && !injectionTokenNameRegex.test(injectionTokenName)) {
           context.report({
             messageId: 'injectionTokenIncorrectName',
+            node: injectionToken,
+          });
+        }
+
+        const parserServices = ESLintUtils.getParserServices(context);
+        const checker = parserServices.program.getTypeChecker();
+
+        const originalNode = parserServices.esTreeNodeToTSNodeMap.get(
+          typeRef,
+        );
+        const nodeType = checker.getTypeAtLocation(originalNode);
+        if (nodeType.isClass() && !allowClassInjection){
+          context.report({
+            messageId: 'classInjection',
             node: injectionToken,
           });
         }
