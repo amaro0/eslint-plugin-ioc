@@ -1,8 +1,27 @@
-import { AST_NODE_TYPES, ESLintUtils, TSESLint, TSESTree } from '@typescript-eslint/experimental-utils';
+import { AST_NODE_TYPES, TSESLint, TSESTree } from '@typescript-eslint/experimental-utils';
 
 import { isSubString } from '../common/string';
+import { getType } from '../common/typesUtility';
 
 const INJECT_DECORATOR_REGEXP = /(i|I)nject/;
+
+function getInjectionToken(decorators: TSESTree.Decorator[]): TSESTree.Identifier | undefined {
+  let injectionToken: TSESTree.Identifier | undefined;
+  decorators.forEach(decorator => {
+    if (decorator.expression.type !== AST_NODE_TYPES.CallExpression) return;
+
+    const { callee, arguments: args } = decorator.expression;
+
+    if (callee.type !== AST_NODE_TYPES.Identifier) return;
+
+    if (args.length && INJECT_DECORATOR_REGEXP.test(callee.name)) {
+      if (args[0].type !== AST_NODE_TYPES.Identifier) return;
+      injectionToken = args[0];
+    }
+  });
+
+  return injectionToken;
+}
 
 type MessageIds = 'injectionTokenIncorrectName' | 'incorrectInjectionToken' | 'classInjection';
 type Options = [
@@ -45,29 +64,17 @@ export const rule: TSESLint.RuleModule<MessageIds, Options> = {
 
         if (!decorators || !decorators.length) return;
 
-        let injectionTokenName: string | undefined;
-        let injectionToken: TSESTree.Identifier | undefined;
-        decorators.forEach(decorator => {
-          if (decorator.expression.type !== AST_NODE_TYPES.CallExpression) return;
+        const injectionToken: TSESTree.Identifier | undefined = getInjectionToken(decorators);
+        if (!injectionToken) return;
 
-          const { callee, arguments: args } = decorator.expression;
+        const injectionTokenName = injectionToken.name;
 
-          if (callee.type !== AST_NODE_TYPES.Identifier) return;
+        if (!parameter.typeAnnotation
+          || parameter.typeAnnotation.typeAnnotation.type !== AST_NODE_TYPES.TSTypeReference) return;
+        const parameterInjectedToTypeReference = <TSESTree.TSTypeReference>parameter.typeAnnotation.typeAnnotation;
 
-          if (args.length && INJECT_DECORATOR_REGEXP.test(callee.name)) {
-            if (args[0].type !== AST_NODE_TYPES.Identifier) return;
-            injectionTokenName = args[0].name;
-            injectionToken = args[0];
-          }
-        });
-
-        if (!injectionTokenName || !injectionToken) return;
-        if (!parameter.typeAnnotation) return;
-        if (parameter.typeAnnotation.typeAnnotation.type !== AST_NODE_TYPES.TSTypeReference) return;
-        const typeRef = <TSESTree.TSTypeReference>parameter.typeAnnotation.typeAnnotation;
-
-        if (typeRef.typeName.type !== AST_NODE_TYPES.Identifier) return;
-        const injectionTypeName = typeRef.typeName.name;
+        if (parameterInjectedToTypeReference.typeName.type !== AST_NODE_TYPES.Identifier) return;
+        const injectionTypeName = parameterInjectedToTypeReference.typeName.name;
 
         if (!isSubString(injectionTokenName, injectionTypeName)) {
           context.report({
@@ -82,14 +89,8 @@ export const rule: TSESLint.RuleModule<MessageIds, Options> = {
           });
         }
 
-        const parserServices = ESLintUtils.getParserServices(context);
-        const checker = parserServices.program.getTypeChecker();
-
-        const originalNode = parserServices.esTreeNodeToTSNodeMap.get(
-          typeRef,
-        );
-        const nodeType = checker.getTypeAtLocation(originalNode);
-        if (nodeType.isClass() && !allowClassInjection){
+        const parameterInjectedToType = getType(context, parameterInjectedToTypeReference);
+        if (parameterInjectedToType.isClass() && !allowClassInjection) {
           context.report({
             messageId: 'classInjection',
             node: injectionToken,
