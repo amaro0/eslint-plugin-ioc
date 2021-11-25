@@ -56,20 +56,7 @@ ruleTester.run('injection-token', rule, {
                }
              }`,
     }, {
-      code: `import { inject } from 'inversify';
-             import { provide } from 'inversify-binding-decorators';
-             import { Organization } from './models/Organization';
-             import {
-               IOrganizationsDatabase,
-               IOrganizationsDatabaseToken,
-             } from './ports/IOrganizationsDatabase';
-             import {
-               IGetOrganization,
-               IGetOrganizationToken,
-             } from './ports/IGetOrganization';
-             import { Context } from '../../../common/types';
-             
-             @provide(IGetNonStartedOrganizationFeeChargesToken)
+      code: `@provide(IGetNonStartedOrganizationFeeChargesToken)
              export class GetOrganizationQueryHandler
                implements IGetOrganization
              {
@@ -91,20 +78,7 @@ ruleTester.run('injection-token', rule, {
   ],
   invalid: [
     {
-      code: `import { inject } from 'inversify';
-             import { provide } from 'inversify-binding-decorators';
-             import { Organization } from './models/Organization';
-             import {
-               IOrganizationsDatabase,
-               IOrganizationsDatabaseToken,
-             } from './ports/IOrganizationsDatabase';
-             import {
-               IGetOrganization,
-               IGetOrganizationToken,
-             } from './ports/IGetOrganization';
-             import { Context } from '../../../common/types';
-             
-             @provide(IGetNonStartedOrganizationFeeChargesToken)
+      code: `@provide(IGetNonStartedOrganizationFeeChargesToken)
              export class GetOrganizationQueryHandler
                implements IGetOrganization
              {
