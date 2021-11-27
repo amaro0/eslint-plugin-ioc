@@ -1,3 +1,5 @@
 import { injectionToken } from './rules/injection-token';
 
-export { injectionToken };
+export const rules = {
+  injectionToken,
+};
