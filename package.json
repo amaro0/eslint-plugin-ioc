@@ -21,15 +21,6 @@
     "test": "jest",
     "build": "tsc -p ./tsconfig.build.json"
   },
-  "keywords": [
-    "eslint",
-    "eslintplugin",
-    "ioc",
-    "nest",
-    "nestjs",
-    "inversify",
-    "ts-syringe"
-  ],
   "author": "",
   "license": "ISC",
   "devDependencies": {
@@ -76,5 +67,14 @@
     ],
     "coverageDirectory": "../coverage",
     "testEnvironment": "node"
-  }
+  },
+  "keywords": [
+    "eslint",
+    "eslintplugin",
+    "ioc",
+    "nest",
+    "nestjs",
+    "inversify",
+    "ts-syringe"
+  ]
 }
