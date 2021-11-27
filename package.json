@@ -19,7 +19,6 @@
     "lint:fresh": "eslint \"{src,apps,libs,test}/**/*.ts\"",
     "typecheck": "tsc --noEmit",
     "test": "jest",
-    "test:fix": "yarn lint:fix && yarn format:fix && yarn test && yarn typecheck",
     "build": "tsc -p ./tsconfig.build.json"
   },
   "keywords": [

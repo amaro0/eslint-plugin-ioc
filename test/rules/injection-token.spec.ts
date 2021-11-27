@@ -1,6 +1,6 @@
 import { ESLintUtils } from '@typescript-eslint/experimental-utils';
 
-import { rule } from '../../src/rules/injection-token';
+import { injectionToken } from '../../src/rules/injection-token';
 import { getFixturesRootDir } from '../utils';
 
 const ruleTester = new ESLintUtils.RuleTester({
@@ -11,7 +11,7 @@ const ruleTester = new ESLintUtils.RuleTester({
   },
 });
 
-ruleTester.run('injection-token', rule, {
+ruleTester.run('injection-token', injectionToken, {
   valid: [
     {
       code: `interface IOrganizationsDatabase {}
