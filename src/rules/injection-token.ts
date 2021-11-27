@@ -31,7 +31,7 @@ type Options = [
   },
 ];
 
-export const rule: TSESLint.RuleModule<MessageIds, Options> = {
+export const injectionToken: TSESLint.RuleModule<MessageIds, Options> = {
   meta: {
     type: 'problem',
     messages: {
