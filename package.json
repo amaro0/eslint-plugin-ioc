@@ -23,7 +23,12 @@
   },
   "keywords": [
     "eslint",
-    "eslintplugin"
+    "eslintplugin",
+    "ioc",
+    "nest",
+    "nestjs",
+    "inversify",
+    "ts-syringe"
   ],
   "author": "",
   "license": "ISC",
