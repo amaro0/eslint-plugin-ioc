@@ -1,7 +1,11 @@
-import { AST_NODE_TYPES, TSESLint, TSESTree } from '@typescript-eslint/experimental-utils';
+import { AST_NODE_TYPES, ESLintUtils, TSESLint, TSESTree } from '@typescript-eslint/experimental-utils';
 
 import { isSubString } from '../common/string';
 import { getType } from '../common/typesUtility';
+
+const createRule = ESLintUtils.RuleCreator(
+  name => `https://example.com/rule/${name}`,
+);
 
 const INJECT_DECORATOR_REGEXP = /(i|I)nject/;
 
@@ -31,7 +35,8 @@ type Options = [
   },
 ];
 
-export const injectionToken: TSESLint.RuleModule<MessageIds, Options> = {
+export const injectionToken: TSESLint.RuleModule<MessageIds, Options> = createRule({
+  name: 'injection-token',
   meta: {
     type: 'problem',
     messages: {
@@ -54,7 +59,17 @@ export const injectionToken: TSESLint.RuleModule<MessageIds, Options> = {
         additionalProperties: false,
       },
     ],
+    docs: {
+      description: '',
+      recommended: 'error',
+      requiresTypeChecking: true,
+      extendsBaseRule: false,
+    },
   },
+  defaultOptions: [{
+    injectionTokenNameRegex: undefined,
+    allowClassInjection: true,
+  }],
   create(context: Readonly<TSESLint.RuleContext<MessageIds, Options>>): TSESLint.RuleListener {
     return {
       TSParameterProperty(parameterProperty: TSESTree.TSParameterProperty): void {
@@ -99,4 +114,4 @@ export const injectionToken: TSESLint.RuleModule<MessageIds, Options> = {
       },
     };
   },
-};
+});
