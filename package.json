@@ -10,6 +10,7 @@
   "types": "./dist/index.d.ts",
   "scripts": {
     "prebuild": "rm -rf dist",
+    "prepublish": "npm run build",
     "scratch": "ts-node-dev --respawn ./src/scratch.ts",
     "format": "prettier --check \"./**/*.ts\"",
     "format:fix": "prettier --write \"./**/*.ts\"",
@@ -19,7 +20,7 @@
     "typecheck": "tsc --noEmit",
     "test": "jest",
     "test:fix": "yarn lint:fix && yarn format:fix && yarn test && yarn typecheck",
-    "build": "tsc -p ./tsconfig.json"
+    "build": "tsc -p ./tsconfig.build.json"
   },
   "keywords": [
     "eslint",
@@ -56,7 +57,7 @@
   "dependencies": {
     "@typescript-eslint/experimental-utils": "^5.4.0",
     "@typescript-eslint/typescript-estree": "^5.4.0",
-    "typescript": "^4.4.2"
+    "typescript": "^4.5.2"
   },
   "peerDependencies": {
     "eslint": ">=0.8.0"
