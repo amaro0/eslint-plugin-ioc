@@ -1,6 +1,6 @@
 import { injectionToken } from './rules/injection-token';
 
-module.exports = {
+export = {
   rules: {
     'injection-token': injectionToken,
   },
