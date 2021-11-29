@@ -40,8 +40,8 @@ export const injectionToken: TSESLint.RuleModule<MessageIds, Options> = createRu
   meta: {
     type: 'problem',
     messages: {
-      incorrectInjectionToken: 'a message',
-      injectionTokenIncorrectName: '123',
+      incorrectInjectionToken: 'Incorrect injection token',
+      injectionTokenIncorrectName: 'Incorrect name format of injection token',
       classInjection: 'Forbidden class injection',
     },
     schema: [
