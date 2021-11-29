@@ -52,7 +52,7 @@ export const injectionToken: TSESLint.RuleModule<MessageIds, Options> = createRu
     injectionTokenNameRegex: undefined,
     allowClassInjection: true,
   }],
-  create(context: Readonly<TSESLint.RuleContext<MessageIds, Options>>): TSESLint.RuleListener {
+  create(context: Readonly<TSESLint.RuleContext<MessageIds, Options>>, [options]): TSESLint.RuleListener {
     return {
       TSParameterProperty(parameterProperty: TSESTree.TSParameterProperty): void {
         function getInjectionToken(decorators: TSESTree.Decorator[]): TSESTree.Identifier | undefined {
@@ -73,7 +73,7 @@ export const injectionToken: TSESLint.RuleModule<MessageIds, Options> = createRu
           return token;
         }
 
-        const options = context.options[0] ?? {};
+        // const options = context.options[0] ?? {};
         const { injectionTokenNameRegex, allowClassInjection } = options;
         const { decorators, parameter } = parameterProperty;
 

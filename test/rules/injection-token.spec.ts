@@ -56,7 +56,9 @@ ruleTester.run('injection-token', injectionToken, {
                }
              }`,
     }, {
-      code: `@provide(IGetOrganizationToken)
+      code: `class OrganizationsRepository{}
+
+             @provide(IGetOrganizationToken)
              export class GetOrganizationQueryHandler
                implements IGetOrganization
              {
