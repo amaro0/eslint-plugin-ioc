@@ -93,6 +93,26 @@ ruleTester.run('injection-token', injectionToken, {
                  );
                }
              }`,
+    }, {
+      code: `class Organization{}
+             export interface IFactory<TModel> {
+                create(data: Partial<TModel>): TModel;
+                createMany(data: Partial<TModel>[]): TModel[];
+              }
+              
+              @provide(IGetOrganizationToken)
+              export class GetOrganizationQueryHandler
+                implements IGetOrganization
+              {
+                constructor(
+                @inject(OrganizationFactoryToken)
+                 private factory: IFactory<Organization>,
+                ) {}
+              
+                run(context?: Context): Promise<Organization> {
+                  return this.factory.create({})
+                }
+              }`,
     },
   ],
   invalid: [
