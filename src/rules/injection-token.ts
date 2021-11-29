@@ -9,24 +9,6 @@ const createRule = ESLintUtils.RuleCreator(
 
 const INJECT_DECORATOR_REGEXP = /(i|I)nject/;
 
-function getInjectionToken(decorators: TSESTree.Decorator[]): TSESTree.Identifier | undefined {
-  let injectionToken: TSESTree.Identifier | undefined;
-  decorators.forEach(decorator => {
-    if (decorator.expression.type !== AST_NODE_TYPES.CallExpression) return;
-
-    const { callee, arguments: args } = decorator.expression;
-
-    if (callee.type !== AST_NODE_TYPES.Identifier) return;
-
-    if (args.length && INJECT_DECORATOR_REGEXP.test(callee.name)) {
-      if (args[0].type !== AST_NODE_TYPES.Identifier) return;
-      injectionToken = args[0];
-    }
-  });
-
-  return injectionToken;
-}
-
 type MessageIds = 'injectionTokenIncorrectName' | 'incorrectInjectionToken' | 'classInjection';
 type Options = [
   {
@@ -73,16 +55,32 @@ export const injectionToken: TSESLint.RuleModule<MessageIds, Options> = createRu
   create(context: Readonly<TSESLint.RuleContext<MessageIds, Options>>): TSESLint.RuleListener {
     return {
       TSParameterProperty(parameterProperty: TSESTree.TSParameterProperty): void {
+        function getInjectionToken(decorators: TSESTree.Decorator[]): TSESTree.Identifier | undefined {
+          let token: TSESTree.Identifier | undefined;
+          decorators.forEach(decorator => {
+            if (decorator.expression.type !== AST_NODE_TYPES.CallExpression) return;
+
+            const { callee, arguments: args } = decorator.expression;
+
+            if (callee.type !== AST_NODE_TYPES.Identifier) return;
+
+            if (args.length && INJECT_DECORATOR_REGEXP.test(callee.name)) {
+              if (args[0].type !== AST_NODE_TYPES.Identifier) return;
+              token = args[0];
+            }
+          });
+
+          return token;
+        }
+
         const options = context.options[0] ?? {};
         const { injectionTokenNameRegex, allowClassInjection } = options;
         const { decorators, parameter } = parameterProperty;
 
         if (!decorators || !decorators.length) return;
 
-        const injectionToken: TSESTree.Identifier | undefined = getInjectionToken(decorators);
-        if (!injectionToken) return;
-
-        const injectionTokenName = injectionToken.name;
+        const iToken: TSESTree.Identifier | undefined = getInjectionToken(decorators);
+        if (!iToken) return;
 
         if (!parameter.typeAnnotation
           || parameter.typeAnnotation.typeAnnotation.type !== AST_NODE_TYPES.TSTypeReference) return;
@@ -90,25 +88,27 @@ export const injectionToken: TSESLint.RuleModule<MessageIds, Options> = createRu
 
         if (parameterInjectedToTypeReference.typeName.type !== AST_NODE_TYPES.Identifier) return;
         const injectionTypeName = parameterInjectedToTypeReference.typeName.name;
+        const gotSomeGenericParameters = !!parameterInjectedToTypeReference.typeParameters?.params.length;
 
-        if (!isSubString(injectionTokenName, injectionTypeName)) {
-          context.report({
-            messageId: 'incorrectInjectionToken',
-            node: injectionToken,
-          });
-        }
-        if (injectionTokenNameRegex && !injectionTokenNameRegex.test(injectionTokenName)) {
+        if (injectionTokenNameRegex && !injectionTokenNameRegex.test(iToken.name)) {
           context.report({
             messageId: 'injectionTokenIncorrectName',
-            node: injectionToken,
+            node: iToken,
           });
         }
 
         const parameterInjectedToType = getType(context, parameterInjectedToTypeReference);
-        if (parameterInjectedToType.isClass() && !allowClassInjection) {
+        if (!allowClassInjection && parameterInjectedToType.isClass()) {
           context.report({
             messageId: 'classInjection',
-            node: injectionToken,
+            node: iToken,
+          });
+        }
+
+        if (!gotSomeGenericParameters && !isSubString(iToken.name, injectionTypeName)) {
+          context.report({
+            messageId: 'incorrectInjectionToken',
+            node: iToken,
           });
         }
       },

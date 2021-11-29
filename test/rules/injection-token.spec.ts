@@ -16,7 +16,7 @@ ruleTester.run('injection-token', injectionToken, {
     {
       code: `interface IOrganizationsDatabase {}
               
-             @provide(IGetNonStartedOrganizationFeeChargesToken)
+             @provide(IGetOrganizationToken)
              export class GetOrganizationQueryHandler
                implements IGetOrganization
              {
@@ -37,7 +37,7 @@ ruleTester.run('injection-token', injectionToken, {
     }, {
       code: `class TestClass {}
 
-             @provide(IGetNonStartedOrganizationFeeChargesToken)
+             @provide(IGetOrganizationToken)
              export class GetOrganizationQueryHandler
                implements IGetOrganization
              {
@@ -56,7 +56,7 @@ ruleTester.run('injection-token', injectionToken, {
                }
              }`,
     }, {
-      code: `@provide(IGetNonStartedOrganizationFeeChargesToken)
+      code: `@provide(IGetOrganizationToken)
              export class GetOrganizationQueryHandler
                implements IGetOrganization
              {
@@ -74,11 +74,30 @@ ruleTester.run('injection-token', injectionToken, {
                  );
                }
              }`,
+    }, {
+      code: `@provide(IGetOrganizationToken)
+             export class GetOrganizationQueryHandler
+               implements IGetOrganization
+             {
+               constructor(
+                 @inject(OrganizationsRepository)
+                 private database: IRepository<Organization>,
+               ) {}
+             
+               run(context?: Context): Promise<Organization> {
+                 return this.database.findAllByContext(
+                   {
+                     organizationId: '123',
+                   },
+                   context,
+                 );
+               }
+             }`,
     },
   ],
   invalid: [
     {
-      code: `@provide(IGetNonStartedOrganizationFeeChargesToken)
+      code: `@provide(IGetOrganizationToken)
              export class GetOrganizationQueryHandler
                implements IGetOrganization
              {
@@ -99,7 +118,7 @@ ruleTester.run('injection-token', injectionToken, {
       errors: [{ messageId: 'incorrectInjectionToken' }],
     },
     {
-      code: `@provide(IGetNonStartedOrganizationFeeChargesToken)
+      code: `@provide(IGetOrganizationToken)
              export class GetOrganizationQueryHandler
                implements IGetOrganization
              {
