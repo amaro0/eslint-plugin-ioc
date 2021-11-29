@@ -6,7 +6,6 @@ import { getType } from '../common/typesUtility';
 const createRule = ESLintUtils.RuleCreator(
   name => `https://example.com/rule/${name}`,
 );
-
 const INJECT_DECORATOR_REGEXP = /(i|I)nject/;
 
 type MessageIds = 'injectionTokenIncorrectName' | 'incorrectInjectionToken' | 'classInjection';
@@ -14,6 +13,15 @@ type Options = [
   {
     injectionTokenNameRegex?: RegExp;
     allowClassInjection?: boolean;
+    injectDecoratorRegex?: RegExp;
+  },
+];
+
+type WithDefaultOptions = [
+  {
+    injectionTokenNameRegex?: RegExp;
+    allowClassInjection: boolean;
+    injectDecoratorRegex?: RegExp;
   },
 ];
 
@@ -31,6 +39,9 @@ export const injectionToken: TSESLint.RuleModule<MessageIds, Options> = createRu
         type: 'object',
         properties: {
           injectionTokenNameRegex: {
+            type: 'object',
+          },
+          injectDecoratorRegex: {
             type: 'object',
           },
           allowClassInjection: {
@@ -51,12 +62,15 @@ export const injectionToken: TSESLint.RuleModule<MessageIds, Options> = createRu
   defaultOptions: [{
     injectionTokenNameRegex: undefined,
     allowClassInjection: true,
+    // It is defaulted to /(i|I)nject/ but for some reason this is not working when i am placing regexp in here
+    injectDecoratorRegex: undefined,
   }],
-  create(context: Readonly<TSESLint.RuleContext<MessageIds, Options>>, [options]): TSESLint.RuleListener {
+  create(context: Readonly<TSESLint.RuleContext<MessageIds, WithDefaultOptions>>, [options]): TSESLint.RuleListener {
     return {
       TSParameterProperty(parameterProperty: TSESTree.TSParameterProperty): void {
-        function getInjectionToken(decorators: TSESTree.Decorator[]): TSESTree.Identifier | undefined {
+        function getInjectionToken(decorators: TSESTree.Decorator[], decoratorNameRegex?: RegExp): TSESTree.Identifier | undefined {
           let token: TSESTree.Identifier | undefined;
+          const regex = decoratorNameRegex ?? INJECT_DECORATOR_REGEXP;
           decorators.forEach(decorator => {
             if (decorator.expression.type !== AST_NODE_TYPES.CallExpression) return;
 
@@ -64,7 +78,7 @@ export const injectionToken: TSESLint.RuleModule<MessageIds, Options> = createRu
 
             if (callee.type !== AST_NODE_TYPES.Identifier) return;
 
-            if (args.length && INJECT_DECORATOR_REGEXP.test(callee.name)) {
+            if (args.length && regex.test(callee.name)) {
               if (args[0].type !== AST_NODE_TYPES.Identifier) return;
               token = args[0];
             }
@@ -74,12 +88,13 @@ export const injectionToken: TSESLint.RuleModule<MessageIds, Options> = createRu
         }
 
         // const options = context.options[0] ?? {};
-        const { injectionTokenNameRegex, allowClassInjection } = options;
+        const { injectionTokenNameRegex, allowClassInjection, injectDecoratorRegex } = options;
+
         const { decorators, parameter } = parameterProperty;
 
         if (!decorators || !decorators.length) return;
 
-        const iToken: TSESTree.Identifier | undefined = getInjectionToken(decorators);
+        const iToken: TSESTree.Identifier | undefined = getInjectionToken(decorators, injectDecoratorRegex);
         if (!iToken) return;
 
         if (!parameter.typeAnnotation

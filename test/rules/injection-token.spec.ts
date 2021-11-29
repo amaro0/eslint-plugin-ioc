@@ -185,5 +185,22 @@ ruleTester.run('injection-token', injectionToken, {
       errors: [{ messageId: 'classInjection' }],
       options: [{ allowClassInjection: false }],
     },
+    {
+      code: ` @provide(IGetOrganizationToken)
+              export class GetOrganizationQueryHandler
+                implements IGetOrganization
+              {
+                constructor(
+                @aaaa(WrongClass)
+                 private factory: GoodClass,
+                ) {}
+
+                run(context?: Context): Promise<Organization> {
+                  return this.factory.create({})
+                }
+              }`,
+      options: [{ injectDecoratorRegex: /aaaa/ }],
+      errors: [{ messageId: 'incorrectInjectionToken' }],
+    },
   ],
 });
