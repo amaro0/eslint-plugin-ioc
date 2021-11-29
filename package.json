@@ -10,7 +10,7 @@
   "types": "./dist/index.d.ts",
   "scripts": {
     "prebuild": "rm -rf dist",
-    "prepublish": "npm run build",
+    "prepublishOnly": "npm run test && npm run lint && npm run build",
     "scratch": "ts-node-dev --respawn ./src/scratch.ts",
     "format": "prettier --check \"./**/*.ts\"",
     "format:fix": "prettier --write \"./**/*.ts\"",
@@ -42,15 +42,17 @@
     "prettier": "^2.3.1",
     "ts-jest": "^27.0.7",
     "ts-node": "^10.0.0",
-    "ts-node-dev": "1.1.8"
+    "ts-node-dev": "1.1.8",
+    "typescript": "^4.4.4"
   },
   "dependencies": {
     "@typescript-eslint/experimental-utils": "^5.4.0",
     "@typescript-eslint/typescript-estree": "^5.4.0",
-    "typescript": "^4.4.4"
+    "tsutils": "^3.21.0"
   },
   "peerDependencies": {
-    "eslint": ">=0.8.0"
+    "eslint": ">=0.8.0",
+    "typescript": ">=4.0.0"
   },
   "jest": {
     "moduleFileExtensions": [
