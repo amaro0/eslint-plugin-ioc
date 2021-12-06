@@ -6,7 +6,7 @@ import { getType } from '../common/typesUtility';
 const createRule = ESLintUtils.RuleCreator(
   name => `https://example.com/rule/${name}`,
 );
-const INJECT_DECORATOR_REGEXP = /(i|I)nject/;
+const INJECT_DECORATOR_REGEXP = /^(i|I)nject$/;
 
 type MessageIds = 'injectionTokenIncorrectName' | 'incorrectInjectionToken' | 'classInjection';
 type Options = [
@@ -62,7 +62,7 @@ export const injectionToken: TSESLint.RuleModule<MessageIds, Options> = createRu
   defaultOptions: [{
     injectionTokenNameRegex: undefined,
     allowClassInjection: true,
-    // It is defaulted to /(i|I)nject/ but for some reason this is not working when i am placing regexp in here
+    // It is defaulted to /^(i|I)nject$/ but for some reason this is not working when i am placing regexp in here
     injectDecoratorRegex: undefined,
   }],
   create(context: Readonly<TSESLint.RuleContext<MessageIds, WithDefaultOptions>>, [options]): TSESLint.RuleListener {
