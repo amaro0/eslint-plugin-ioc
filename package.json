@@ -1,7 +1,12 @@
 {
   "name": "eslint-plugin-ioc",
   "version": "0.0.9",
-  "description": "",
+  "description": "Minimal eslint plugin for basic IoC linting",
+  "homepage": "https://github.com/amaro0/eslint-plugin-ioc",
+  "repository": {
+    "type" : "git",
+    "url" : "https://github.com/amaro0/eslint-plugin-ioc.git"
+  },
   "main": "./dist/index.js",
   "files": [
     "dist/**"
@@ -21,8 +26,8 @@
     "test": "jest",
     "build": "tsc -p ./tsconfig.build.json"
   },
-  "author": "",
-  "license": "ISC",
+  "author": "amaro0",
+  "license": "MIT",
   "devDependencies": {
     "@types/eslint": "^7.29.0",
     "@types/jest": "^27.0.2",
