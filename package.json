@@ -52,8 +52,7 @@
   },
   "dependencies": {
     "@typescript-eslint/experimental-utils": "^5.4.0",
-    "@typescript-eslint/typescript-estree": "^5.4.0",
-    "tsutils": "^3.21.0"
+    "@typescript-eslint/typescript-estree": "^5.4.0"
   },
   "peerDependencies": {
     "eslint": ">=0.8.0",
