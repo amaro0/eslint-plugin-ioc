@@ -4,7 +4,7 @@ import { isSubString } from '../common/string';
 import { getType } from '../common/typesUtility';
 
 const createRule = ESLintUtils.RuleCreator(
-  name => `https://example.com/rule/${name}`,
+  () => 'https://github.com/amaro0/eslint-plugin-ioc',
 );
 const INJECT_DECORATOR_REGEXP = /^(i|I)nject$/;
 
