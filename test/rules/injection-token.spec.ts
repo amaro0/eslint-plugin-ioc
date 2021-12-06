@@ -34,7 +34,8 @@ ruleTester.run('injection-token', injectionToken, {
                  );
                }
              }`,
-    }, {
+    },
+    {
       code: `class TestClass {}
 
              @provide(IGetOrganizationToken)
@@ -55,7 +56,8 @@ ruleTester.run('injection-token', injectionToken, {
                  );
                }
              }`,
-    }, {
+    },
+    {
       code: `class OrganizationsRepository{}
 
              @provide(IGetOrganizationToken)
@@ -76,7 +78,8 @@ ruleTester.run('injection-token', injectionToken, {
                  );
                }
              }`,
-    }, {
+    },
+    {
       code: `@provide(IGetOrganizationToken)
              export class GetOrganizationQueryHandler
                implements IGetOrganization
@@ -95,7 +98,8 @@ ruleTester.run('injection-token', injectionToken, {
                  );
                }
              }`,
-    }, {
+    },
+    {
       code: `class Organization{}
              export interface IFactory<TModel> {
                 create(data: Partial<TModel>): TModel;

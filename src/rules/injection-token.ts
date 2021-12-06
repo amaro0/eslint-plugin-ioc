@@ -3,9 +3,7 @@ import { AST_NODE_TYPES, ESLintUtils, TSESLint, TSESTree } from '@typescript-esl
 import { isSubString } from '../common/string';
 import { getType } from '../common/typesUtility';
 
-const createRule = ESLintUtils.RuleCreator(
-  () => 'https://github.com/amaro0/eslint-plugin-ioc',
-);
+const createRule = ESLintUtils.RuleCreator(() => 'https://github.com/amaro0/eslint-plugin-ioc');
 const INJECT_DECORATOR_REGEXP = /^(i|I)nject$/;
 
 type MessageIds = 'injectionTokenIncorrectName' | 'incorrectInjectionToken' | 'classInjection';
@@ -59,19 +57,24 @@ export const injectionToken: TSESLint.RuleModule<MessageIds, Options> = createRu
       extendsBaseRule: false,
     },
   },
-  defaultOptions: [{
-    injectionTokenNameRegex: undefined,
-    allowClassInjection: true,
-    // It is defaulted to /^(i|I)nject$/ but for some reason this is not working when i am placing regexp in here
-    injectDecoratorRegex: undefined,
-  }],
+  defaultOptions: [
+    {
+      injectionTokenNameRegex: undefined,
+      allowClassInjection: true,
+      // It is defaulted to /^(i|I)nject$/ but for some reason this is not working when i am placing regexp in here
+      injectDecoratorRegex: undefined,
+    },
+  ],
   create(context: Readonly<TSESLint.RuleContext<MessageIds, WithDefaultOptions>>, [options]): TSESLint.RuleListener {
     return {
       TSParameterProperty(parameterProperty: TSESTree.TSParameterProperty): void {
-        function getInjectionToken(decorators: TSESTree.Decorator[], decoratorNameRegex?: RegExp): TSESTree.Identifier | undefined {
+        function getInjectionToken(
+          decorators: TSESTree.Decorator[],
+          decoratorNameRegex?: RegExp,
+        ): TSESTree.Identifier | undefined {
           let token: TSESTree.Identifier | undefined;
           const regex = decoratorNameRegex ?? INJECT_DECORATOR_REGEXP;
-          decorators.forEach(decorator => {
+          decorators.forEach((decorator) => {
             if (decorator.expression.type !== AST_NODE_TYPES.CallExpression) return;
 
             const { callee, arguments: args } = decorator.expression;
@@ -97,8 +100,11 @@ export const injectionToken: TSESLint.RuleModule<MessageIds, Options> = createRu
         const iToken: TSESTree.Identifier | undefined = getInjectionToken(decorators, injectDecoratorRegex);
         if (!iToken) return;
 
-        if (!parameter.typeAnnotation
-          || parameter.typeAnnotation.typeAnnotation.type !== AST_NODE_TYPES.TSTypeReference) return;
+        if (
+          !parameter.typeAnnotation ||
+          parameter.typeAnnotation.typeAnnotation.type !== AST_NODE_TYPES.TSTypeReference
+        )
+          return;
         const parameterInjectedToTypeReference = <TSESTree.TSTypeReference>parameter.typeAnnotation.typeAnnotation;
 
         if (parameterInjectedToTypeReference.typeName.type !== AST_NODE_TYPES.Identifier) return;

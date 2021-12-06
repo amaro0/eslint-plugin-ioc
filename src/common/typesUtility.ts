@@ -6,8 +6,6 @@ export function getType(context: TSESLint.RuleContext<string, unknown[]>, node: 
   const parserServices = ESLintUtils.getParserServices(context);
   const checker = parserServices.program.getTypeChecker();
 
-  const originalNode = parserServices.esTreeNodeToTSNodeMap.get(
-    node,
-  );
+  const originalNode = parserServices.esTreeNodeToTSNodeMap.get(node);
   return checker.getTypeAtLocation(originalNode);
 }
