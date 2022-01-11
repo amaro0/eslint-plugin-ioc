@@ -1,6 +1,6 @@
 {
   "name": "eslint-plugin-ioc",
-  "version": "0.0.10",
+  "version": "0.1.0",
   "description": "Minimal eslint plugin for basic IoC linting",
   "homepage": "https://github.com/amaro0/eslint-plugin-ioc",
   "repository": {
