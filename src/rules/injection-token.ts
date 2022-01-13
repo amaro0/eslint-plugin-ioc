@@ -2,9 +2,9 @@ import { AST_NODE_TYPES, ESLintUtils, TSESLint, TSESTree } from '@typescript-esl
 
 import { isSubString } from '../common/string';
 import { getType } from '../common/typesUtility';
+import { getInjectionToken } from '../common/injectDecorator';
 
 const createRule = ESLintUtils.RuleCreator(() => 'https://github.com/amaro0/eslint-plugin-ioc');
-const INJECT_DECORATOR_REGEXP = /^(i|I)nject$/;
 
 type MessageIds = 'injectionTokenIncorrectName' | 'incorrectInjectionToken' | 'classInjection';
 type Options = [
@@ -68,29 +68,6 @@ export const injectionToken: TSESLint.RuleModule<MessageIds, Options> = createRu
   create(context: Readonly<TSESLint.RuleContext<MessageIds, WithDefaultOptions>>, [options]): TSESLint.RuleListener {
     return {
       TSParameterProperty(parameterProperty: TSESTree.TSParameterProperty): void {
-        function getInjectionToken(
-          decorators: TSESTree.Decorator[],
-          decoratorNameRegex?: RegExp,
-        ): TSESTree.Identifier | undefined {
-          let token: TSESTree.Identifier | undefined;
-          const regex = decoratorNameRegex ?? INJECT_DECORATOR_REGEXP;
-          decorators.forEach((decorator) => {
-            if (decorator.expression.type !== AST_NODE_TYPES.CallExpression) return;
-
-            const { callee, arguments: args } = decorator.expression;
-
-            if (callee.type !== AST_NODE_TYPES.Identifier) return;
-
-            if (args.length && regex.test(callee.name)) {
-              if (args[0].type !== AST_NODE_TYPES.Identifier) return;
-              token = args[0];
-            }
-          });
-
-          return token;
-        }
-
-        // const options = context.options[0] ?? {};
         const { injectionTokenNameRegex, allowClassInjection, injectDecoratorRegex } = options;
 
         const { decorators, parameter } = parameterProperty;
