@@ -166,30 +166,6 @@ ruleTester.run('injection-token', injectionToken, {
       options: [{ injectionTokenNameRegex: /^[A-Za-z]*Token$/ }],
     },
     {
-      code: `class TestClass {}
-              
-             @provide(IGetOrganizationToken)
-             export class GetOrganizationQueryHandler
-               implements IGetOrganization
-             {
-               constructor(
-                 @inject(TestClass)
-                 private database: TestClass,
-               ) {}
-             
-               run(context?: Context): Promise<Organization> {
-                 return this.database.findAllByContext(
-                   {
-                     organizationId: '123',
-                   },
-                   context,
-                 );
-               }
-             }`,
-      errors: [{ messageId: 'classInjection' }],
-      options: [{ allowClassInjection: false }],
-    },
-    {
       code: ` @provide(IGetOrganizationToken)
               export class GetOrganizationQueryHandler
                 implements IGetOrganization

@@ -59,7 +59,6 @@ ruleTester.run('class-injection', classInjection, {
                }
              }`,
       errors: [{ messageId: 'classInjection' }],
-      only: true,
     },
   ],
 });

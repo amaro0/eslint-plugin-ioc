@@ -1,16 +1,14 @@
 import { AST_NODE_TYPES, ESLintUtils, TSESLint, TSESTree } from '@typescript-eslint/experimental-utils';
 
-import { isSubString } from '../common/string';
-import { getType } from '../common/typesUtility';
 import { getInjectionToken } from '../common/injectDecorator';
+import { isSubString } from '../common/string';
 
 const createRule = ESLintUtils.RuleCreator(() => 'https://github.com/amaro0/eslint-plugin-ioc');
 
-type MessageIds = 'injectionTokenIncorrectName' | 'incorrectInjectionToken' | 'classInjection';
+type MessageIds = 'injectionTokenIncorrectName' | 'incorrectInjectionToken';
 type Options = [
   {
     injectionTokenNameRegex?: RegExp;
-    allowClassInjection?: boolean;
     injectDecoratorRegex?: RegExp;
   },
 ];
@@ -18,7 +16,6 @@ type Options = [
 type WithDefaultOptions = [
   {
     injectionTokenNameRegex?: RegExp;
-    allowClassInjection: boolean;
     injectDecoratorRegex?: RegExp;
   },
 ];
@@ -30,7 +27,6 @@ export const injectionToken: TSESLint.RuleModule<MessageIds, Options> = createRu
     messages: {
       incorrectInjectionToken: 'Incorrect injection token',
       injectionTokenIncorrectName: 'Incorrect name format of injection token',
-      classInjection: 'Forbidden class injection',
     },
     schema: [
       {
@@ -41,10 +37,6 @@ export const injectionToken: TSESLint.RuleModule<MessageIds, Options> = createRu
           },
           injectDecoratorRegex: {
             type: 'object',
-          },
-          allowClassInjection: {
-            type: 'boolean',
-            default: true,
           },
         },
         additionalProperties: false,
@@ -60,7 +52,6 @@ export const injectionToken: TSESLint.RuleModule<MessageIds, Options> = createRu
   defaultOptions: [
     {
       injectionTokenNameRegex: undefined,
-      allowClassInjection: true,
       // It is defaulted to /^(i|I)nject$/ but for some reason this is not working when i am placing regexp in here
       injectDecoratorRegex: undefined,
     },
@@ -68,7 +59,7 @@ export const injectionToken: TSESLint.RuleModule<MessageIds, Options> = createRu
   create(context: Readonly<TSESLint.RuleContext<MessageIds, WithDefaultOptions>>, [options]): TSESLint.RuleListener {
     return {
       TSParameterProperty(parameterProperty: TSESTree.TSParameterProperty): void {
-        const { injectionTokenNameRegex, allowClassInjection, injectDecoratorRegex } = options;
+        const { injectionTokenNameRegex, injectDecoratorRegex } = options;
 
         const { decorators, parameter } = parameterProperty;
 
@@ -91,14 +82,6 @@ export const injectionToken: TSESLint.RuleModule<MessageIds, Options> = createRu
         if (injectionTokenNameRegex && !injectionTokenNameRegex.test(iToken.name)) {
           context.report({
             messageId: 'injectionTokenIncorrectName',
-            node: iToken,
-          });
-        }
-
-        const parameterInjectedToType = getType(context, parameterInjectedToTypeReference);
-        if (!allowClassInjection && parameterInjectedToType.isClass()) {
-          context.report({
-            messageId: 'classInjection',
             node: iToken,
           });
         }
