@@ -59,25 +59,6 @@ class GetUserQueryHandler {
 }
 ```
 
-Additionally, if you want to enforce strict convention, you can disable injection by class or set injection token naming
-guidelines.
-
-`allowClassInjection` - set to false if injection by implementation(class) should be forbidden
-
-```ts
-class OrganizationsDatabase {};
-
-class GetOrganizationQueryHandler
-  implements IGetOrganization {
-  constructor(
-    // error
-    @inject(OrganizationsDatabase)
-    private database: OrganizationsDatabase,
-  ) {
-  }
-}
-```
-
 - `injectionTokenNameRegex` - set to some regexp to enforce strict naming patter of injection tokens
 - `injectDecoratorRegex` - set to some regexp if you are using other naming for inject decorators than /^(i|I)nject$/
 
