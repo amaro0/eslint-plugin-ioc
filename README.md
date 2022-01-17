@@ -59,26 +59,20 @@ class GetUserQueryHandler {
 }
 ```
 
-Additionally, if you want to enforce strict convention, you can disable injection by class or set injection token naming
-guidelines.
+- `injectionTokenNameRegex` - set to some regexp to enforce strict naming patter of injection tokens
+- `injectDecoratorRegex` - set to some regexp if you are using other naming for inject decorators than /^(i|I)nject$/
 
-`allowClassInjection` - set to false if injection by implementation(class) should be forbidden
+### injection-token-type
 
-```ts
-class OrganizationsDatabase {};
+Lint injection token type
 
-class GetOrganizationQueryHandler
-  implements IGetOrganization {
-  constructor(
-    // error
-    @inject(OrganizationsDatabase)
-    private database: OrganizationsDatabase,
-  ) {
-  }
-}
-```
+- `allowedTypes` - array of allowed types, can be: `['symbol', 'string', 'object']`
+- `injectionTokenNameRegex` - set to some regexp to enforce strict naming patter of injection tokens
+- `injectDecoratorRegex` - set to some regexp if you are using other naming for inject decorators than `/^(i|I)nject$/`
 
-`allowClassInjection` - set to `false` if injection by implementation(class) should be forbidden, default `true`
+### class-injection
+
+Forbid class(implementation) injection
 
 ```ts
 class OrganizationsDatabase {};
@@ -94,8 +88,7 @@ class GetOrganizationQueryHandler
 }
 ```
 
-`injectionTokenNameRegex` - set to some regexp to enforce strict naming patter of injection tokens
-`injectDecoratorRegex` - set to some regexp if you are using other naming for inject decorators than /^(i|I)nject$/
+- `injectDecoratorRegex` - set to some regexp if you are using other naming for inject decorators than `/^(i|I)nject$/`
 
 #### Complete usage
 
@@ -111,10 +104,20 @@ module.exports = {
   plugins: ['ioc'],
   rules: {
     'ioc/injection-token': [
-      'error', {
-        allowClassInjection: false,   
+      'error', { 
         injectDecoratorRegex: /^(i|I)nject$/,
         injectionTokenNameRegex: /^[A-z]*Token$/
+      }
+    ],
+    'ioc/injection-token-type': [
+      'error', {
+        allowedTypes: ['symbol'],   
+        injectDecoratorRegex: /^(i|I)nject$/
+      }
+    ],
+    'ioc/class-injection': [
+      'error', {   
+        injectDecoratorRegex: /^(i|I)nject$/
       }
     ],
   },

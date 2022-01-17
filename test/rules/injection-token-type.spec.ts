@@ -1,6 +1,6 @@
 import { ESLintUtils } from '@typescript-eslint/experimental-utils';
 
-import { injectionToken } from '../../src/rules/injection-token';
+import { injectionTokenType } from '../../src/rules/injection-token-type';
 import { getFixturesRootDir } from '../utils';
 
 const ruleTester = new ESLintUtils.RuleTester({
@@ -11,17 +11,17 @@ const ruleTester = new ESLintUtils.RuleTester({
   },
 });
 
-ruleTester.run('injection-token', injectionToken, {
+ruleTester.run('injection-token-type', injectionTokenType, {
   valid: [
     {
       code: `interface IOrganizationsDatabase {}
-              
+             const token = Symbol.for('IOrganizationsDatabase');
              @provide(IGetOrganizationToken)
              export class GetOrganizationQueryHandler
                implements IGetOrganization
              {
                constructor(
-                 @inject(IOrganizationsDatabaseToken)
+                 @inject(token)
                  private database: IOrganizationsDatabase,
                ) {}
              
@@ -36,15 +36,15 @@ ruleTester.run('injection-token', injectionToken, {
              }`,
     },
     {
-      code: `class TestClass {}
-
+      code: `interface IOrganizationsDatabase {}
+             const token = 'IOrganizationsDatabase';
              @provide(IGetOrganizationToken)
              export class GetOrganizationQueryHandler
                implements IGetOrganization
              {
                constructor(
-                 @inject()
-                 private database: TestClass,
+                 @inject(token)
+                 private database: IOrganizationsDatabase,
                ) {}
              
                run(context?: Context): Promise<Organization> {
@@ -56,17 +56,22 @@ ruleTester.run('injection-token', injectionToken, {
                  );
                }
              }`,
+      options: [{ allowedTypes: ['string'] }],
     },
     {
-      code: `class OrganizationsRepository{}
+      code: `interface IOrganizationsDatabase {}
 
+             class TokenC{
+              p!:string;
+             }
+             
              @provide(IGetOrganizationToken)
              export class GetOrganizationQueryHandler
                implements IGetOrganization
              {
                constructor(
-                 @inject(OrganizationsRepository)
-                 private database: OrganizationsRepository,
+                 @inject(TokenC)
+                 private database: IOrganizationsDatabase,
                ) {}
              
                run(context?: Context): Promise<Organization> {
@@ -78,57 +83,19 @@ ruleTester.run('injection-token', injectionToken, {
                  );
                }
              }`,
-    },
-    {
-      code: `@provide(IGetOrganizationToken)
-             export class GetOrganizationQueryHandler
-               implements IGetOrganization
-             {
-               constructor(
-                 @inject(OrganizationsRepository)
-                 private database: IRepository<Organization>,
-               ) {}
-             
-               run(context?: Context): Promise<Organization> {
-                 return this.database.findAllByContext(
-                   {
-                     organizationId: '123',
-                   },
-                   context,
-                 );
-               }
-             }`,
-    },
-    {
-      code: `class Organization{}
-             export interface IFactory<TModel> {
-                create(data: Partial<TModel>): TModel;
-                createMany(data: Partial<TModel>[]): TModel[];
-              }
-              
-              @provide(IGetOrganizationToken)
-              export class GetOrganizationQueryHandler
-                implements IGetOrganization
-              {
-                constructor(
-                @inject(OrganizationFactoryToken)
-                 private factory: IFactory<Organization>,
-                ) {}
-              
-                run(context?: Context): Promise<Organization> {
-                  return this.factory.create({})
-                }
-              }`,
+      options: [{ allowedTypes: ['object'] }],
     },
   ],
   invalid: [
     {
-      code: `@provide(IGetOrganizationToken)
+      code: `interface IOrganizationsDatabase {}
+             const token = 'IOrganizationsDatabase';
+             @provide(IGetOrganizationToken)
              export class GetOrganizationQueryHandler
                implements IGetOrganization
              {
                constructor(
-                 @inject(IUsersDatabaseToken)
+                 @inject(token)
                  private database: IOrganizationsDatabase,
                ) {}
              
@@ -141,15 +108,18 @@ ruleTester.run('injection-token', injectionToken, {
                  );
                }
              }`,
-      errors: [{ messageId: 'incorrectInjectionToken' }],
+      options: [{ allowedTypes: ['symbol'] }],
+      errors: [{ messageId: 'notAllowedInjectionTokenType' }],
     },
     {
-      code: `@provide(IGetOrganizationToken)
+      code: `interface IOrganizationsDatabase {}
+             const token = Symbol.for('IOrganizationsDatabase');
+             @provide(IGetOrganizationToken)
              export class GetOrganizationQueryHandler
                implements IGetOrganization
              {
                constructor(
-                 @inject(IOrganizationsDatabaseToke)
+                 @inject(token)
                  private database: IOrganizationsDatabase,
                ) {}
              
@@ -162,25 +132,32 @@ ruleTester.run('injection-token', injectionToken, {
                  );
                }
              }`,
-      errors: [{ messageId: 'injectionTokenIncorrectName' }],
-      options: [{ injectionTokenNameRegex: /^[A-Za-z]*Token$/ }],
+      options: [{ allowedTypes: ['string'] }],
+      errors: [{ messageId: 'notAllowedInjectionTokenType' }],
     },
     {
-      code: ` @provide(IGetOrganizationToken)
-              export class GetOrganizationQueryHandler
-                implements IGetOrganization
-              {
-                constructor(
-                @aaaa(WrongClass)
-                 private factory: GoodClass,
-                ) {}
-
-                run(context?: Context): Promise<Organization> {
-                  return this.factory.create({})
-                }
-              }`,
-      options: [{ injectDecoratorRegex: /aaaa/ }],
-      errors: [{ messageId: 'incorrectInjectionToken' }],
+      code: `interface IOrganizationsDatabase {}
+             class TokenC{};
+             @provide(IGetOrganizationToken)
+             export class GetOrganizationQueryHandler
+               implements IGetOrganization
+             {
+               constructor(
+                 @inject(TokenC)
+                 private database: IOrganizationsDatabase,
+               ) {}
+             
+               run(context?: Context): Promise<Organization> {
+                 return this.database.findAllByContext(
+                   {
+                     organizationId: '123',
+                   },
+                   context,
+                 );
+               }
+             }`,
+      options: [{ allowedTypes: ['symbol'] }],
+      errors: [{ messageId: 'notAllowedInjectionTokenType' }],
     },
   ],
 });
